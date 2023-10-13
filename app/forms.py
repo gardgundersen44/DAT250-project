@@ -18,7 +18,7 @@ Example:
 from datetime import datetime
 from typing import cast
 
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import (
     BooleanField,
     DateField,
@@ -44,8 +44,10 @@ class LoginForm(FlaskForm):
     username = StringField(label="Username", render_kw={"placeholder": "Username"})
     password = PasswordField(label="Password", render_kw={"placeholder": "Password"})
     remember_me = BooleanField(
-        label="Remember me"
-    )  # TODO: It would be nice to have this feature implemented, probably by using cookies
+        label="Remember me")
+    recaptcha = RecaptchaField()
+    
+      # TODO: It would be nice to have this feature implemented, probably by using cookies
     submit = SubmitField(label="Sign In")
 
 

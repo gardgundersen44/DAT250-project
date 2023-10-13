@@ -11,7 +11,6 @@ from flask import flash, redirect, render_template, send_from_directory, url_for
 from app import app, sqlite
 from app.forms import CommentsForm, FriendsForm, IndexForm, PostForm, ProfileForm
 
-
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])
 def index():
@@ -26,7 +25,7 @@ def index():
     login_form = index_form.login
     register_form = index_form.register
 
-    if login_form.is_submitted() and login_form.submit.data:
+    if login_form.validate_on_submit() and login_form.submit.data:
         get_user = f"""
             SELECT *
             FROM Users
@@ -49,9 +48,7 @@ def index():
         sqlite.query(insert_user)
         flash("User successfully created!", category="success")
         return redirect(url_for("index"))
-
     return render_template("index.html.j2", title="Welcome", form=index_form)
-
 
 @app.route("/stream/<string:username>", methods=["GET", "POST"])
 def stream(username: str):
@@ -90,7 +87,6 @@ def stream(username: str):
     posts = sqlite.query(get_posts)
     return render_template("stream.html.j2", title="Stream", username=username, form=post_form, posts=posts)
 
-
 @app.route("/comments/<string:username>/<int:post_id>", methods=["GET", "POST"])
 def comments(username: str, post_id: int):
     """Provides the comments page for the application.
@@ -127,10 +123,7 @@ def comments(username: str, post_id: int):
         """
     post = sqlite.query(get_post, one=True)
     comments = sqlite.query(get_comments)
-    return render_template(
-        "comments.html.j2", title="Comments", username=username, form=comments_form, post=post, comments=comments
-    )
-
+    return render_template("comments.html.j2", title="Comments", username=username, form=comments_form, post=post, comments=comments)
 
 @app.route("/friends/<string:username>", methods=["GET", "POST"])
 def friends(username: str):
@@ -213,7 +206,6 @@ def profile(username: str):
         return redirect(url_for("profile", username=username))
 
     return render_template("profile.html.j2", title="Profile", username=username, user=user, form=profile_form)
-
 
 @app.route("/uploads/<string:filename>")
 def uploads(filename):
