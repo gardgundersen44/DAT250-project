@@ -15,6 +15,7 @@
           rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
           crossorigin="anonymous"/>
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LfqwpcoAAAAAEq-WpdxEMN5yHD0oE99QRFWsvuy"></script>
     <title>{{ title }} - Social Insecurity</title>
   </head>
   <body>
@@ -86,6 +87,15 @@
             integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
             crossorigin="anonymous"></script>
     <!-- Javascript from child templates -->
+    <script>
+        function onClick(e) {
+        e.preventDefault();
+        grecaptcha.enterprise.ready(async () => {
+        const token = await grecaptcha.enterprise.execute('6LfqwpcoAAAAAEq-WpdxEMN5yHD0oE99QRFWsvuy', {action: 'LOGIN'});
+    
+  });
+}
+</script>
     {% block script %}
     {% endblock script %}
   </body>

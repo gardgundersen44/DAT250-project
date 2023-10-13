@@ -18,6 +18,7 @@
             <form action="" method="post" novalidate>
               <div class="mb-3">{{ form.login.username(class_="form-control") }}</div>
               <div class="mb-3">{{ form.login.password(class_="form-control") }}</div>
+              {{form.login.recaptcha()}}
               <div class="mb-3 form-check form-check-inline">
                 {{ form.login.remember_me(class_="form-check-input") }} {{ form.login.remember_me.label(class_="form-check-label") }}
               </div>
@@ -39,6 +40,7 @@
               <div class="mb-3">{{ form.register.password(class_="form-control") }}</div>
               <div class="mb-3">{{ form.register.confirm_password(class_="form-control") }}</div>
               <div>{{ form.register.submit(class_="btn btn-primary") }}</div>
+              
             </form>
           </div>
         </div>
