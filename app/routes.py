@@ -26,12 +26,12 @@ def index():
     register_form = index_form.register
 
     if login_form.validate_on_submit() and login_form.submit.data:
-        get_user = f"""
+        get_user = """
             SELECT *
             FROM Users
-            WHERE username = '{login_form.username.data}';
+            WHERE username = ?;
             """
-        user = sqlite.query(get_user, one=True)
+        user = sqlite.execute(get_user, (login_form.username.data,)).fetchone()
 
         if user is None:
             flash("Sorry, this user does not exist!", category="warning")
