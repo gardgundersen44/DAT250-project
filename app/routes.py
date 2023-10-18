@@ -31,7 +31,8 @@ def index():
             FROM Users
             WHERE username = ?;
             """
-        user = sqlite.execute(get_user, (login_form.username.data,)).fetchone()
+
+        user = sqlite.connection.execute(get_user, (login_form.username.data,)).fetchone()
 
         if user is None:
             flash("Sorry, this user does not exist!", category="warning")
