@@ -52,6 +52,7 @@ def index():
                                     register_form.first_name.data, 
                                     register_form.last_name.data, 
                                     register_form.password.data))
+        sqlite.connection.commit()
         flash("User successfully created!", category="success")
         return redirect(url_for("index"))
     return render_template("index.html.j2", title="Welcome", form=index_form)
@@ -76,7 +77,7 @@ def stream(username: str):
         FROM Users
         WHERE username = ?;
         """
-    user = sqlite.query(get_user, (username,), one=True)
+    user = sqlite.connection.execute(get_user, (username,)).fetchone()
 
     if post_form.is_submitted():
         if post_form.image.data:
@@ -88,6 +89,7 @@ def stream(username: str):
             VALUES (?, ?, ? , CURRENT_TIMESTAMP);
             """
         sqlite.connection.execute(insert_post, (user["id"], post_form.content.data, post_form.image.data.filename))
+        sqlite.connection.commit()
         return redirect(url_for("stream", username=username))
 
     get_posts = """
@@ -96,7 +98,7 @@ def stream(username: str):
          WHERE p.u_id IN (SELECT u_id FROM Friends WHERE f_id = ?) OR p.u_id IN (SELECT f_id FROM Friends WHERE u_id = ?) OR p.u_id = ?
          ORDER BY p.creation_time DESC;
         """
-    posts = sqlite.query(get_posts, (user["id"], user["id"], user["id"]))
+    posts = sqlite.connection.execute(get_posts, (user["id"], user["id"], user["id"]))
     return render_template("stream.html.j2", title="Stream", username=username, form=post_form, posts=posts)
 
 @app.route("/comments/<string:username>/<int:post_id>", methods=["GET", "POST"])
@@ -127,6 +129,7 @@ def comments(username: str, post_id: int):
             VALUES (?, ?, ?, CURRENT_TIMESTAMP);
             """
         sqlite.connection.execute(insert_comment, (post_id, user["id"], comments_form.comment.data))
+        sqlite.connection.commit()
 
     get_post = """
         SELECT *
@@ -185,6 +188,7 @@ def friends(username: str):
                 VALUES (?, ?);
                 """
             sqlite.connection.execute(insert_friend, (user["id"], friend["id"]))
+            sqlite.connection.commit()
             flash("Friend successfully added!", category="success")
     get_friends = """
         SELECT *
@@ -228,6 +232,7 @@ def profile(username: str):
                                    profile_form.movie.data,
                                    profile_form.nationality.data,
                                    profile_form.birthday.data,))
+        sqlite.connection.commit()
         return redirect(url_for("profile", username=username))
 
     return render_template("profile.html.j2", title="Profile", username=username, user=user, form=profile_form)
