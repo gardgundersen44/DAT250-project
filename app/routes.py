@@ -6,7 +6,7 @@ It also contains the SQL queries used for communicating with the database.
 
 from pathlib import Path
 
-from flask import flash, redirect, render_template, send_from_directory, url_for
+from flask import flash, redirect, render_template, send_from_directory, url_for, session
 
 from app import app, sqlite
 from app.forms import CommentsForm, FriendsForm, IndexForm, PostForm, ProfileForm
@@ -38,6 +38,7 @@ def index():
         elif user["password"] != login_form.password.data:
             flash("Sorry, wrong password!", category="warning")
         elif user["password"] == login_form.password.data:
+            session["username"] = login_form.username.data
             return redirect(url_for("stream", username=login_form.username.data))
 
     elif register_form.is_submitted() and register_form.submit.data:
@@ -58,6 +59,12 @@ def stream(username: str):
 
     Otherwise, it reads the username from the URL and displays all posts from the user and their friends.
     """
+    logged_in_user = session.get("username")
+
+    if logged_in_user != username:
+        flash("Unauthorized access!", category="warning")
+        return redirect(url_for("index"))
+
     post_form = PostForm()
     get_user = f"""
         SELECT *
@@ -95,6 +102,12 @@ def comments(username: str, post_id: int):
 
     Otherwise, it reads the username and post id from the URL and displays all comments for the post.
     """
+    logged_in_user = session.get("username")
+
+    if logged_in_user != username:
+        flash("Unauthorized access!", category="warning")
+        return redirect(url_for("index"))
+
     comments_form = CommentsForm()
     get_user = f"""
         SELECT *
@@ -133,6 +146,12 @@ def friends(username: str):
 
     Otherwise, it reads the username from the URL and displays all friends of the user.
     """
+    logged_in_user = session.get("username")
+
+    if logged_in_user != username:
+        flash("Unauthorized access!", category="warning")
+        return redirect(url_for("index"))
+
     friends_form = FriendsForm()
     get_user = f"""
         SELECT *
@@ -186,6 +205,12 @@ def profile(username: str):
 
     Otherwise, it reads the username from the URL and displays the user's profile.
     """
+    logged_in_user = session.get("username")
+
+    if logged_in_user != username:
+        flash("Unauthorized access!", category="warning")
+        return redirect(url_for("index"))
+
     profile_form = ProfileForm()
     get_user = f"""
         SELECT *
