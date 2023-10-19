@@ -5,7 +5,7 @@ It also contains the SQL queries used for communicating with the database.
 """
 
 from pathlib import Path
-
+from html import escape
 from flask import flash, redirect, render_template, send_from_directory, url_for, session
 
 from app import app, sqlite
@@ -88,6 +88,10 @@ def stream(username: str):
             INSERT INTO Posts (u_id, content, image, creation_time)
             VALUES (?, ?, ? , CURRENT_TIMESTAMP);
             """
+        
+        # Sanitize post content (escape HTML characters)
+        post_form.content.data = escape(post_form.content.data)
+
         sqlite.connection.execute(insert_post, (user["id"], post_form.content.data, post_form.image.data.filename))
         sqlite.connection.commit()
         return redirect(url_for("stream", username=username))
@@ -99,6 +103,7 @@ def stream(username: str):
          ORDER BY p.creation_time DESC;
         """
     posts = sqlite.connection.execute(get_posts, (user["id"], user["id"], user["id"]))
+
     return render_template("stream.html.j2", title="Stream", username=username, form=post_form, posts=posts)
 
 @app.route("/comments/<string:username>/<int:post_id>", methods=["GET", "POST"])
@@ -136,15 +141,26 @@ def comments(username: str, post_id: int):
         FROM Posts AS p JOIN Users AS u ON p.u_id = u.id
         WHERE p.id = ?;
         """
+ 
+    post = sqlite.connection.execute(get_post, (post_id,)).fetchone()
+ 
     get_comments = """
         SELECT DISTINCT *
         FROM Comments AS c JOIN Users AS u ON c.u_id = u.id
         WHERE c.p_id=?
         ORDER BY c.creation_time DESC;
         """
-    post = sqlite.connection.execute(get_post, (post_id)).fetchone()
+    
     comments = sqlite.connection.execute(get_comments, (post_id,)).fetchall()
-    return render_template("comments.html.j2", title="Comments", username=username, form=comments_form, post=post, comments=comments)
+    # Sanitize each comment (escape HTML characters)
+    sanitized_comments = []
+    for comment in comments:
+        new_comment = dict(comment)
+        new_comment["comment"] = escape(comment["comment"])
+        sanitized_comments.append(new_comment)
+
+    return render_template("comments.html.j2", title="Comments", username=username, 
+                           form=comments_form, post=post, comments=sanitized_comments)
 
 @app.route("/friends/<string:username>", methods=["GET", "POST"])
 def friends(username: str):
@@ -169,7 +185,7 @@ def friends(username: str):
             FROM Users
             WHERE username = ?;
             """
-        friend = sqlite.connection.execute(get_friend, (friends_form.friend.data,)).fetchone()
+        friend = sqlite.connection.execute(get_friend, (friends_form.username.data,)).fetchone()
         get_friends = """
             SELECT f_id
             FROM Friends
@@ -225,13 +241,17 @@ def profile(username: str):
                 nationality=?, birthday=?
             WHERE username=?;
             """
+        
+        # Sanitize form input
+        education = escape(profile_form.education.data)
+        employment = escape(profile_form.employment.data)
+        music = escape(profile_form.music.data)
+        movie = escape(profile_form.movie.data)
+        nationality = escape(profile_form.nationality.data)
+
         sqlite.connection.execute(update_profile, 
-                                  (profile_form.education.data,
-                                   profile_form.employment.data,
-                                   profile_form.music.data,
-                                   profile_form.movie.data,
-                                   profile_form.nationality.data,
-                                   profile_form.birthday.data,))
+                                  (education, employment, music, movie, nationality, 
+                                   profile_form.birthday.data, username))
         sqlite.connection.commit()
         return redirect(url_for("profile", username=username))
 
