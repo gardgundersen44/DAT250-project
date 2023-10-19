@@ -37,7 +37,7 @@ def index():
         if user is None:
             flash("Sorry, this user does not exist!", category="warning")
         elif user["password"] != login_form.password.data:
-            flash("Sorry, wrong password!", category="warning")
+            flash("Sorry, wrong username or password!", category="warning")
         elif user["password"] == login_form.password.data:
             session["username"] = login_form.username.data
             return redirect(url_for("stream", username=login_form.username.data))
